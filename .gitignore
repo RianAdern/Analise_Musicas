@@ -5,3 +5,6 @@ __pycache__/
 .Python
 env/
 venv/
+MusicData_Cleaned.csv
+Imagens/Figure_1.png
+Imagens/Figure_2.png
