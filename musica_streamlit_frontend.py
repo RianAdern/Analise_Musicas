@@ -9,6 +9,8 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 
 
+from Pacote_Frontend.stream_tab_1 import Tab_Data_Analysis  # Importa a função
+
 # Configuração inicial da página
 st.set_page_config(page_title="Data Processing App", layout="wide")
 
@@ -24,51 +26,7 @@ def main():
 
     # Tab Data Analysis
     with tab1:
-        col1, col2, col3, col4 = st.columns([1, 5, 7, 1])
-        with col2:  # Segunda coluna
-            st.header("Upload de Arquivo")
-            # Upload do arquivo CSV
-            uploaded_file = st.file_uploader("Escolha um arquivo CSV", type=['csv'])
-            
-            if uploaded_file is not None:
-                # Leitura do arquivo
-                try:
-                    df = pd.read_csv(uploaded_file)
-                    st.success("Arquivo carregado com sucesso!")
-                    
-                    # Armazenar o dataframe na sessão
-                    st.session_state['df'] = df
-
-                except Exception as e:
-                    st.error(f"Erro ao carregar o arquivo: {e}")
-                    return
-
-        with col3:  # Terceira coluna
-            if 'df' in st.session_state:
-                df = st.session_state['df']
-                st.header("Análise Exploratória")
-                
-                # Mostrar informações básicas
-                st.subheader("Informações Básicas")
-                st.write(f"Número de linhas: {df.shape[0]}")
-                st.write(f"Número de colunas: {df.shape[1]}")
-                
-                # Mostrar primeiras linhas
-                st.subheader("Primeiras 5 linhas")
-                st.dataframe(df.head())
-
-                # Estatísticas básicas
-                st.subheader("Estatísticas Descritivas")
-                st.dataframe(df.describe())
-                
-                # Informações sobre tipos de dados e valores nulos
-                st.subheader("Tipos de Dados e Valores Nulos")
-                buffer = pd.DataFrame({
-                    'Tipo de Dado': df.dtypes,
-                    'Valores Nulos': df.isnull().sum(),
-                    '% Nulos': (df.isnull().sum() / len(df) * 100).round(2)
-                })
-                st.dataframe(buffer)
+        Tab_Data_Analysis()
 
     # As outras tabs permanecem vazias por enquanto
     with tab2:

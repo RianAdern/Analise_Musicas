@@ -5,6 +5,7 @@ from sklearn.preprocessing import LabelEncoder, OrdinalEncoder, MultiLabelBinari
 from wordcloud import WordCloud
 
 
+
 # Carrega arquivo csv
 data = pd.read_csv("music_sentiment_dataset.csv")
 
@@ -17,27 +18,27 @@ print("---------- #  SHAPE OF THE DATAFRAME # -----------\n",data.shape)
 print("---------- #  LIST OF COLUMN NAMES # -----------\n",data.columns)
 print("---------- #  DATA TYPES OF COLUMNS # -----------\n",data.dtypes)
 
-# Data Cleaning
+#Data Cleaning
 
-# print("---------- #  DUPLICATES # -----------\n",data.duplicated().sum())
-# print("---------- #  DROPING DUPLICATES # -----------\n",data.drop_duplicates())
+print("---------- #  DUPLICATES # -----------\n",data.duplicated().sum())
+print("---------- #  DROPING DUPLICATES # -----------\n",data.drop_duplicates())
 
 
-# # Missing Values
-# print("---------- #  MISSING VALUES # -----------\n", data.isnull().sum())
+# Missing Values
+print("---------- #  MISSING VALUES # -----------\n", data.isnull().sum())
 
-# # Checking for inconsistent categorical values
-# categorical_columns = data.select_dtypes(include=['object']).columns
-# for col in categorical_columns:
-#     print(f"---------- # UNIQUE VALUES IN {col} # -----------\n", data[col].unique())
+# Checking for inconsistent categorical values
+categorical_columns = data.select_dtypes(include=['object']).columns
+for col in categorical_columns:
+    print(f"---------- # UNIQUE VALUES IN {col} # -----------\n", data[col].unique())
 
-# Checking for negative or zero values in numerical columns (if not expected)
-# numerical_columns = data.select_dtypes(include=['number']).columns
-# for col in numerical_columns:
-#     if (data[col] < 0).any():
-#         print(f"WARNING: Column '{col}' contains negative values!")
-#     if (data[col] == 0).any():
-#         print(f"NOTE: Column '{col}' contains zero values. Check if this is expected.")
+#Checking for negative or zero values in numerical columns (if not expected)
+numerical_columns = data.select_dtypes(include=['number']).columns
+for col in numerical_columns:
+    if (data[col] < 0).any():
+        print(f"WARNING: Column '{col}' contains negative values!")
+    if (data[col] == 0).any():
+        print(f"NOTE: Column '{col}' contains zero values. Check if this is expected.")
 
 # Checking Null Columns
 print("---------- #  NULL VALUES INFO # -----------\n",data.isnull().sum())
