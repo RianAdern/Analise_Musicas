@@ -2,14 +2,13 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 # Necessário importar essas bibliotecas no início do arquivo
-from sklearn.preprocessing import LabelEncoder, OrdinalEncoder
-from sklearn.preprocessing import MultiLabelBinarizer
 
 import seaborn as sns
 import matplotlib.pyplot as plt
 
-
-from Pacote_Frontend.stream_tab_1 import Tab_Data_Analysis  # Importa a função
+from Pacote_Frontend.stream_tab_1 import Tab_Data_Analysis 
+from Pacote_Frontend.stream_tab_2 import * 
+from Pacote_Frontend.stream_tab_3 import * 
 
 # Configuração inicial da página
 st.set_page_config(page_title="Data Processing App", layout="wide")
@@ -30,176 +29,10 @@ def main():
 
     # As outras tabs permanecem vazias por enquanto
     with tab2:
-        col1, col2b, col3b, col4 = st.columns([1, 5, 5, 1])
-        if 'df' not in st.session_state:
-            with col2b:
-                st.warning("Por favor, faça upload de um arquivo na aba Data Analysis primeiro!")
-        else:
-            df = st.session_state['df'].copy()  # Criamos uma cópia para modificações
-            
-            with col2b:
-                st.header("Limpeza de Dados")
-                
-                # Verificação de duplicatas
-                st.subheader("1. Verificação de Duplicatas")
-                duplicatas = df.duplicated().sum()
-                st.write(f"Número de linhas duplicadas: {duplicatas}")
-                if duplicatas > 0:
-                    if st.button("Remover Duplicatas"):
-                        df = df.drop_duplicates()
-                        st.session_state['df'] = df
-                        st.success(f"{duplicatas} linhas duplicadas removidas!")
-                        st.write(f"Novo número de linhas: {df.shape[0]}")
-
-                # Verificação de valores nulos
-                st.subheader("2. Valores Nulos")
-                nulos = df.isnull().sum()
-                if nulos.sum() > 0:
-                    st.write("Colunas com valores nulos:")
-                    st.dataframe(nulos[nulos > 0])
-                    opcao_nulos = st.selectbox(
-                        "Escolha uma ação para valores nulos:",
-                        ["Nenhuma", "Remover linhas", "Preencher com média (numéricos)", "Preencher com moda"]
-                    )
-                    if st.button("Aplicar ação nos nulos"):
-                        if opcao_nulos == "Remover linhas":
-                            df = df.dropna()
-                            st.success("Linhas com nulos removidas!")
-                        elif opcao_nulos == "Preencher com média (numéricos)":
-                            numeric_columns = df.select_dtypes(include=[np.number]).columns
-                            df[numeric_columns] = df[numeric_columns].fillna(df[numeric_columns].mean())
-                            st.success("Valores numéricos preenchidos com média!")
-                        elif opcao_nulos == "Preencher com moda":
-                            df = df.fillna(df.mode().iloc[0])
-                            st.success("Valores preenchidos com moda!")
-                        st.session_state['df'] = df
-
-            with col3b:
-                # Verificação de consistência categórica
-                st.subheader("3. Consistência de Dados Categóricos")
-                categoricas = df.select_dtypes(include=['object']).columns
-                if len(categoricas) > 0:
-                    coluna_selecionada = st.selectbox("Selecione uma coluna categórica:", categoricas)
-                    valores_unicos = df[coluna_selecionada].value_counts()
-                    st.write("Distribuição dos valores:")
-                    st.dataframe(valores_unicos, width=500)
-                    
-                    # Verificação de possíveis inconsistências (ex: variações de maiúsculas/minúsculas)
-                    valores_normalizados = df[coluna_selecionada].str.lower().value_counts()
-                    if not valores_unicos.equals(valores_normalizados):
-                        st.warning("Possíveis inconsistências detectadas (maiúsculas/minúsculas)!")
-                        if st.button("Padronizar para minúsculas"):
-                            df[coluna_selecionada] = df[coluna_selecionada].str.lower()
-                            st.session_state['df'] = df
-                            st.success("Valores padronizados para minúsculas!")
-
-                # Outras verificações adicionais
-                st.subheader("4. Outras Verificações")
-                # Verificação de valores numéricos inconsistentes
-                numericas = df.select_dtypes(include=[np.number]).columns
-                if len(numericas) > 0:
-                    coluna_num = st.selectbox("Selecione uma coluna numérica:", numericas)
-                    stats = df[coluna_num].describe()
-                    st.write("Estatísticas:")
-                    st.dataframe(stats)
-                    # Verificação de outliers (método IQR)
-                    Q1 = df[coluna_num].quantile(0.25)
-                    Q3 = df[coluna_num].quantile(0.75)
-                    IQR = Q3 - Q1
-                    outliers = ((df[coluna_num] < (Q1 - 1.5 * IQR)) | (df[coluna_num] > (Q3 + 1.5 * IQR))).sum()
-                    if outliers > 0:
-                        st.write(f"Número de possíveis outliers: {outliers}")
-                        if st.button("Remover outliers desta coluna"):
-                            df = df[~((df[coluna_num] < (Q1 - 1.5 * IQR)) | (df[coluna_num] > (Q3 + 1.5 * IQR)))]
-                            st.session_state['df'] = df
-                            st.success("Outliers removidos!")
+        Tab_Data_Cleaning()
         
     with tab3:
-        col1, col2c, col3c, col4c = st.columns([1, 7, 3, 1])
-        if 'df' not in st.session_state:
-            with col2c:
-                st.warning("Por favor, faça upload de um arquivo na aba Data Analysis primeiro!")
-        else:
-            with col2c:
-                st.header("Encoding de Dados")
-                
-                # Mostrar colunas disponíveis
-                st.write("Colunas disponíveis no dataset:")
-                st.write(st.session_state['df'].columns.tolist())
-
-                # Botão único para todas as transformações
-                if st.button("Executar Todas as Transformações"):
-                    df = st.session_state['df'].copy()  # Pegamos o df atual
-                    
-                    # Instanciação dos encoders
-                    label_encoder = LabelEncoder()
-                    ordinal_encoder = OrdinalEncoder()
-                    multilabel_encoder = MultiLabelBinarizer()
-
-                    # Definição das colunas
-                    nominal_cols = ['User_Text', 'Sentiment_Label', 'Song_Name', 'Artist', 'Genre', 'Mood']
-                    ordinal_cols = ['Tempo (BPM)', 'Energy', 'Danceability']
-                    multilabel_cols = []
-
-                    try:
-                        # 1. Pré-processamento de IDs
-                        st.subheader("1. Pré-processamento de IDs")
-                        df['User_ID'] = df['User_ID'].str.replace('U', '').astype(int)
-                        df['Recommended_Song_ID'] = df['Recommended_Song_ID'].str.replace('S', '').astype(int)
-                        st.write("IDs processados com sucesso!")
-
-                        # 2. Nominal Encoding
-                        st.subheader("2. Encoding Nominal (LabelEncoder)")
-                        for col in nominal_cols:
-                            if col in df.columns:
-                                df[col] = label_encoder.fit_transform(df[col])
-                                st.write(f"ENCODED >>> {col}")
-
-                        # 3. Ordinal Encoding
-                        st.subheader("3. Encoding Ordinal (OrdinalEncoder)")
-                        for col in ordinal_cols:
-                            if col in df.columns:
-                                df[col] = ordinal_encoder.fit_transform(df[[col]])
-                                st.write(f"ENCODED >>> {col}")
-
-                        # 4. Multilabel Encoding
-                        st.subheader("4. Encoding Multilabel (MultiLabelBinarizer)")
-                        if len(multilabel_cols) > 0:
-                            for col in multilabel_cols:
-                                if col in df.columns:
-                                    df[col] = multilabel_encoder.fit_transform(df[[col]])
-                                    st.write(f"ENCODED >>> {col}")
-                        else:
-                            st.write("Nenhuma coluna multilabel definida")
-
-                        # Atualizar o session_state com todas as transformações
-                        st.session_state['df_transformado'] = df
-                        st.success("Todas as transformações concluídas com sucesso!")
-                        
-                        # Mostrar resultado
-                        st.write("Pré-visualização do dataframe transformado:")
-                        st.dataframe(df.head())
-
-                    except Exception as e:
-                        st.error(f"Erro durante as transformações: {e}")
-
-            with col3c:
-                st.subheader("Exportar Dados")
-                if 'df_transformado' in st.session_state:
-                    output_name = st.text_input("Nome do arquivo (sem extensão)", "encoded_data")
-                    if st.button("Salvar como CSV"):
-                        try:
-                            csv = st.session_state['df_transformado'].to_csv(index=False)
-                            st.download_button(
-                                label="Download CSV",
-                                data=csv,
-                                file_name=f"{output_name}.csv",
-                                mime="text/csv"
-                            )
-                            st.success(f"Arquivo '{output_name}.csv' pronto para download!")
-                        except Exception as e:
-                            st.error(f"Erro ao salvar o arquivo: {e}")
-
+        Tab_Encoding_Data()
 
 
     with tab4:
