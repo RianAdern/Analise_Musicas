@@ -4,6 +4,7 @@ from Pacote_Frontend.stream_tab_1 import *
 from Pacote_Frontend.stream_tab_2 import * 
 from Pacote_Frontend.stream_tab_3 import * 
 from Pacote_Frontend.stream_tab_4 import *
+from Pacote_Frontend.stream_tab_5 import *
 
 # Configuração inicial da página
 st.set_page_config(page_title="Data Processing App", layout="wide")
@@ -11,11 +12,12 @@ st.set_page_config(page_title="Data Processing App", layout="wide")
 # Função principal
 def main():
     # Criação das tabs
-    tab1, tab2, tab3, tab4 = st.tabs([
+    tab1, tab2, tab3, tab4, tab5= st.tabs([
         "Data Analysis", 
         "Data Cleaning", 
         "Encoding Data", 
-        "Data Visualization"
+        "Data Visualization",
+        "Data Resume"
     ])
 
     # Tab Data Analysis
@@ -31,6 +33,10 @@ def main():
 
     with tab4:
         Tab_Data_Visualization()
-        
+    
+    with tab5:
+        Tab_Data_Resume()
+
+
 if __name__ == '__main__':
     main()
